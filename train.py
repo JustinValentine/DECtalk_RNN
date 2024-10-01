@@ -25,6 +25,9 @@ encoded_text = np.array([char2int[ch] for ch in all_text])
 sequence_length = 100 
 batch_size = 64
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+
 def get_batches(arr, batch_size, seq_length):
     batch_size_total = batch_size * seq_length
     n_batches = len(arr) // batch_size_total
@@ -60,7 +63,8 @@ class DeckTalkRNN(nn.Module):
         self.fc = nn.Linear(n_hidden, len(self.chars))
 
     def forward(self, x, hidden):
-        x = x.float()
+        x = x.to(device).float()
+        hidden = tuple([h.to(device) for h in hidden])
         r_output, hidden = self.lstm(x, hidden)
         out = self.dropout(r_output)
         out = out.reshape(-1, self.n_hidden)
@@ -74,6 +78,8 @@ class DeckTalkRNN(nn.Module):
 
 
 model = DeckTalkRNN(chars, n_hidden=512, n_layers=2)
+model.to(device)
+
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.CrossEntropyLoss()
 
@@ -85,12 +91,15 @@ def train(model, data, epochs=10, batch_size=64, seq_length=100, lr=0.001, clip=
 
     for e in range(epochs):
         hidden = model.init_hidden(batch_size)
+        hidden = tuple([each.to(device) for each in hidden])
 
         for batch_i, (x, y) in enumerate(get_batches(data, batch_size, seq_length)):
             x = one_hot_encode(x, len(chars))
-            inputs, targets = torch.from_numpy(x), torch.from_numpy(y)
-            
+            inputs = torch.from_numpy(x).to(device)
+            targets = torch.from_numpy(y).to(device)
+
             hidden = tuple([each.data for each in hidden])
+            hidden = tuple([each.to(device) for each in hidden])
 
             model.zero_grad()
             output, hidden = model(inputs, hidden)
@@ -100,7 +109,8 @@ def train(model, data, epochs=10, batch_size=64, seq_length=100, lr=0.001, clip=
             optimizer.step()
 
             if batch_i % print_every == 0:
-                print(f"Epoch: {e+1}/{epochs}... Step: {batch_i}... Loss: {loss.item()}")
+                print(f"Epoch: {e+1}/{epochs}... Step: {batch_i}... Loss: {loss.item():.4f}")
+
 
 def one_hot_encode(arr, n_labels):
     one_hot = np.zeros((arr.size, n_labels), dtype=np.float32)
@@ -112,11 +122,12 @@ def one_hot_encode(arr, n_labels):
 def predict(model, char, hidden=None, temperature=1.0):
     x = np.array([[model.char2int[char]]])
     x = one_hot_encode(x, len(model.chars))
-    inputs = torch.from_numpy(x)
+    inputs = torch.from_numpy(x).to(device)
 
     hidden = tuple([each.data for each in hidden])
-    out, hidden = model(inputs, hidden)
+    hidden = tuple([each.to(device) for each in hidden])
 
+    out, hidden = model(inputs, hidden)
     prob = nn.functional.softmax(out / temperature, dim=1).data
     prob = prob.cpu()
 
@@ -127,6 +138,7 @@ def sample(model, size, prime='[:', temperature=1.0):
     model.eval()
     chars = [ch for ch in prime]
     hidden = model.init_hidden(1)
+    hidden = tuple([each.to(device) for each in hidden])
 
     for ch in prime:
         char, hidden = predict(model, ch, hidden, temperature)
@@ -139,6 +151,5 @@ def sample(model, size, prime='[:', temperature=1.0):
 
     return ''.join(chars)
 
-
 train(model, encoded_text, epochs=20, batch_size=64, seq_length=100, lr=0.001)
-# print(sample(model, 1000, prime='[:', temperature=0.8))
+print(sample(model, 1000, prime='[:', temperature=0.8))
