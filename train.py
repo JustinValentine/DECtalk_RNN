@@ -4,7 +4,6 @@ import torch
 from torch import nn
 import pickle
 
-
 # Load data
 data_folder = 'txt_files/'
 all_text = ''
