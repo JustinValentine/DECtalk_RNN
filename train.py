@@ -118,43 +118,6 @@ def one_hot_encode(arr, n_labels):
     one_hot = one_hot.reshape((*arr.shape, n_labels))
     return one_hot
 
-<<<<<<< HEAD
-
-def predict(model, char, hidden=None, temperature=1.0):
-    x = np.array([[model.char2int[char]]])
-    x = one_hot_encode(x, len(model.chars))
-    inputs = torch.from_numpy(x).to(device)
-
-    hidden = tuple([each.data for each in hidden])
-    hidden = tuple([each.to(device) for each in hidden])
-
-    out, hidden = model(inputs, hidden)
-    prob = nn.functional.softmax(out / temperature, dim=1).data
-    prob = prob.cpu()
-
-    char_ind = np.random.choice(len(model.chars), p=prob.numpy().squeeze())
-    return model.int2char[char_ind], hidden
-
-def sample(model, size, prime='[:', temperature=1.0):
-    model.eval()
-    chars = [ch for ch in prime]
-    hidden = model.init_hidden(1)
-    hidden = tuple([each.to(device) for each in hidden])
-
-    for ch in prime:
-        char, hidden = predict(model, ch, hidden, temperature)
-
-    chars.append(char)
-
-    for _ in range(size):
-        char, hidden = predict(model, chars[-1], hidden, temperature)
-        chars.append(char)
-
-    return ''.join(chars)
-
-train(model, encoded_text, epochs=20, batch_size=64, seq_length=100, lr=0.001)
-print(sample(model, 1000, prime='[:', temperature=0.8))
-=======
 train(model, encoded_text, epochs=20, batch_size=64, seq_length=100, lr=0.001)
 
 model_filename = 'decktalk_rnn.pth'
@@ -163,4 +126,3 @@ print(f'Model saved to {model_filename}')
 
 with open('char_mappings.pkl', 'wb') as f:
     pickle.dump({'chars': chars, 'int2char': int2char, 'char2int': char2int}, f)
->>>>>>> f89d2fb (Can save & load model)
