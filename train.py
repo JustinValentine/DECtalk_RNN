@@ -2,6 +2,7 @@ import os
 import numpy as np
 import torch
 from torch import nn
+import pickle
 
 
 # Load data
@@ -118,6 +119,7 @@ def one_hot_encode(arr, n_labels):
     one_hot = one_hot.reshape((*arr.shape, n_labels))
     return one_hot
 
+<<<<<<< HEAD
 
 def predict(model, char, hidden=None, temperature=1.0):
     x = np.array([[model.char2int[char]]])
@@ -153,3 +155,13 @@ def sample(model, size, prime='[:', temperature=1.0):
 
 train(model, encoded_text, epochs=20, batch_size=64, seq_length=100, lr=0.001)
 print(sample(model, 1000, prime='[:', temperature=0.8))
+=======
+train(model, encoded_text, epochs=20, batch_size=64, seq_length=100, lr=0.001)
+
+model_filename = 'decktalk_rnn.pth'
+torch.save(model.state_dict(), model_filename)
+print(f'Model saved to {model_filename}')
+
+with open('char_mappings.pkl', 'wb') as f:
+    pickle.dump({'chars': chars, 'int2char': int2char, 'char2int': char2int}, f)
+>>>>>>> f89d2fb (Can save & load model)
