@@ -5,14 +5,12 @@ from urllib.parse import urljoin, unquote
 
 os.makedirs('txt_files', exist_ok=True)
 
-# Base URL
 base_url = 'https://theflameofhope.co/device/CHRISTMAS/'
 # base_url = 'https://theflameofhope.co/device/CHILDRENS/'
 # base_url = 'https://theflameofhope.co/device/COUNTRY/'
 # base_url = 'https://theflameofhope.co/device/GOSPEL/'
 # base_url = 'https://theflameofhope.co/device/ROCK/'
 
-# Get the HTML content
 response = requests.get(base_url)
 response.raise_for_status()
 soup = BeautifulSoup(response.text, 'html.parser')
@@ -22,9 +20,8 @@ for link in links:
     href = link['href']
     file_url = urljoin(base_url, href)
     
-    # Extract the file name and decode it
     file_name = os.path.basename(href)
-    file_name = unquote(file_name)  # Decode URL-encoded characters
+    file_name = unquote(file_name)
     
     print(f'Downloading {file_name}...')
     
