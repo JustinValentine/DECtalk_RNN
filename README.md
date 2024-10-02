@@ -10,7 +10,7 @@ Generate DECtalk songs using a Recurrent Neural Network (RNN).
 1. **Train the model**:
    ```bash
    python train.py
-2. **Generate songs:**:
+2. **Generate songs**:
    ```bash
     python generate.py
 
