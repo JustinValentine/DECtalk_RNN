@@ -1,6 +1,6 @@
 # DECtalk RNN
 
-Generate DECtalk songs using a Recurrent Neural Network (RNN).
+Generate DECtalk songs using a Recurrent Neural Network (RNN). Inspired by this video: [AI-Generated DECtalk Songs](https://youtu.be/8AwSZdNknIE).
 
 - **Play your generated songs**: [Play DECtalk Songs](https://webspeak.terminal.ink/)
 - **Songs scraped from**: [Song Sources](https://theflameofhope.co/SONGS%20FOR%20PC'.html)
