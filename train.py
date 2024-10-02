@@ -117,9 +117,9 @@ if __name__ == '__main__':
 
     train(model, encoded_text, epochs=20, batch_size=64, seq_length=70, lr=0.001)
 
-    model_filename = 'models/decktalk_rnn_70.pth'
+    model_filename = 'models/decktalk_rnn_200.pth'
     torch.save(model.state_dict(), model_filename)
     print(f'Model saved to {model_filename}')
 
-    with open('models/char_mappings_70.pkl', 'wb') as f:
+    with open('models/char_mappings_200.pkl', 'wb') as f:
         pickle.dump({'chars': chars, 'int2char': int2char, 'char2int': char2int}, f)

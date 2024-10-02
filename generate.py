@@ -6,7 +6,7 @@ from train import DeckTalkRNN
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-with open('models/char_mappings_128_100.pkl', 'rb') as f:
+with open('models/char_mappings_70.pkl', 'rb') as f:
     mappings = pickle.load(f)
 chars = mappings['chars']
 int2char = mappings['int2char']
@@ -15,7 +15,7 @@ char2int = mappings['char2int']
 n_hidden = 512
 n_layers = 2
 model = DeckTalkRNN(tokens=chars, int2char=int2char, char2int=char2int, n_hidden=n_hidden, n_layers=n_layers)
-model.load_state_dict(torch.load('models/decktalk_rnn_128_100.pth', map_location=device, weights_only=True))
+model.load_state_dict(torch.load('models/decktalk_rnn_70.pth', map_location=device, weights_only=True))
 
 model.to(device)
 model.eval()
