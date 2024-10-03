@@ -60,11 +60,14 @@ class DeckTalkRNN(nn.Module):
 
     def forward(self, x, hidden):
         x = x.to(device).float()
-        hidden = tuple([h.to(device) for h in hidden])
-        r_output, hidden = self.lstm(x, hidden)
-        out = self.dropout(r_output)
-        out = out.reshape(-1, self.n_hidden)
-        out = self.fc(out)
+        hidden = tuple([h.to(device) for h in hidden]) # Tuple (h0 and c0) with shape: [n_layers, batch_size, n_hidden]
+        r_output, hidden = self.lstm(x, hidden) # Output shape: [batch_size, seq_length, n_hidden]
+        out = self.dropout(r_output) # Apply dropout to the LSTM output (sets some of the activations to zero)
+        out = out.reshape(-1, self.n_hidden) # Shape [batch_size * seq_length, n_hidden]
+
+        # Pass through the fully connected layer to get final character logits
+        out = self.fc(out)# Shape [batch_size * seq_length, 80]
+        
         return out, hidden
 
     def init_hidden(self, batch_size):
@@ -90,20 +93,22 @@ def train(model, data, epochs=10, batch_size=64, seq_length=100, lr=0.001, clip=
 
         for batch_i, (x, y) in enumerate(get_batches(data, batch_size, seq_length)):
             x = one_hot_encode(x, len(chars)) # x is converted to one-hot encoded format
-            inputs = torch.from_numpy(x).to(device) # Convert numpy array to a PyTorch tensor and move to GPU (or CPU)
-            targets = torch.from_numpy(y).to(device) # Convert numpy array to a PyTorch tensor and move to GPU (or CPU)
+            inputs = torch.from_numpy(x).to(device) # Convert numpy array to a PyTorch tensor and move to GPU (or CPU) -- Size: [64, 70, 80]
+            targets = torch.from_numpy(y).to(device) # Convert numpy array to a PyTorch tensor and move to GPU (or CPU) -- Size: [64, 70, 80]
 
-            hidden = tuple([each.to(device) for each in hidden])
+            # Move hidden state tensors to GPU (or CPU) 
+            hidden = tuple([each.to(device) for each in hidden]) # Tuple of two tensors (h0 and c0) -- Size: [n_layers, batch_size, n_hidden]
 
             model.zero_grad() # Zero out the gradients before the backpropagation step
 
-            output, hidden = model(inputs, hidden) # forward pass through the model
+            # forward pass through the model
+            output, hidden = model(inputs, hidden)
             loss = criterion(output, targets.view(batch_size * seq_length).long())
 
             loss.backward() # backpropagation to compute the gradients
 
             nn.utils.clip_grad_norm_(model.parameters(), clip) # prevent exploding gradients
-            
+
             optimizer.step()
 
             if batch_i % print_every == 0:

@@ -47,7 +47,7 @@ def sample(model, size, start_seq='[:', temperature=1.0):
     model.eval()
     chars = [ch for ch in start_seq]
 
-    hidden = model.init_hidden(1)# Batch size is 1 for text generation
+    hidden = model.init_hidden(1) # Batch size is 1 for text generation
     hidden = tuple([each.to(device) for each in hidden])
 
     for ch in start_seq:
@@ -60,7 +60,7 @@ def sample(model, size, start_seq='[:', temperature=1.0):
         # Use the last generated character to predict the next one
         char, hidden = predict(model, chars[-1], hidden, temperature)
         chars.append(char)
-        
+
     return ''.join(chars)
 
 # Generate text
